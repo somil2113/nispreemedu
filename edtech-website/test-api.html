@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #0a0e27; color: #fff; }
+        pre { background: #1a1f3a; padding: 15px; border-radius: 8px; overflow-x: auto; }
+        button { padding: 10px 20px; background: #FFD700; color: black; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #FFC700; }
+        .success { color: #4ade80; }
+        .error { color: #ff6b6b; }
+    </style>
+</head>
+<body>
+    <h1>API Connection Test</h1>
+    
+    <button onclick="testHealth()">Test Health Check</button>
+    <button onclick="testCourses()">Test Courses API</button>
+    <button onclick="clearResults()">Clear Results</button>
+    
+    <h2>Results:</h2>
+    <div id="results"></div>
+    
+    <script>
+        const API_URL = 'http://localhost:5001/api';
+        
+        async function testHealth() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML += '<p><strong>Testing Health Check...</strong></p>';
+            
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                resultsDiv.innerHTML += `<p class="success">✓ Health Check OK</p>`;
+                resultsDiv.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                resultsDiv.innerHTML += `<p class="error">✗ Health Check Failed: ${error.message}</p>`;
+            }
+        }
+        
+        async function testCourses() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML += '<p><strong>Testing Courses API...</strong></p>';
+            
+            try {
+                const response = await fetch(`${API_URL}/courses`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                resultsDiv.innerHTML += `<p class="success">✓ Courses API OK - ${data.length} courses found</p>`;
+                resultsDiv.innerHTML += `<pre>${JSON.stringify(data.slice(0, 2), null, 2)}</pre>`;
+            } catch (error) {
+                resultsDiv.innerHTML += `<p class="error">✗ Courses API Failed: ${error.message}</p>`;
+            }
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            testHealth();
+            setTimeout(testCourses, 500);
+        });
+    </script>
+</body>
+</html>

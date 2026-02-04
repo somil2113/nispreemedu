@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gurukul - Online Learning Platform</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-wrapper">
+                <div class="logo">Gurukul</div>
+                <ul class="nav-links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#courses">Courses</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="checkout.html" style="color: var(--primary-color); font-weight: bold;">🛒 Cart</a></li>
+                    <li id="authLink"></li>
+                </ul>
+                <button class="hamburger" id="hamburger">☰</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1>Learn From The Best</h1>
+            <p>Upskill yourself with industry-relevant courses taught by experts</p>
+            <button class="btn btn-primary">Explore Courses</button>
+        </div>
+    </section>
+
+    <!-- Courses Section -->
+    <section class="courses-section" id="courses">
+        <div class="container">
+            <h2>All Programs</h2>
+            
+            <!-- Category Filter -->
+            <div class="filter-section">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="web-development">Web Development</button>
+                <button class="filter-btn" data-filter="data-science">Data Science</button>
+                <button class="filter-btn" data-filter="cloud">Cloud & DevOps</button>
+                <button class="filter-btn" data-filter="ai-ml">AI & ML</button>
+            </div>
+
+            <!-- Courses Grid -->
+            <div class="courses-grid" id="coursesGrid">
+                <!-- Courses will be populated by JavaScript -->
+            </div>
+
+            <div style="text-align: center; margin-top: 3rem;">
+                <a href="checkout.html" class="btn btn-primary" style="text-decoration: none;">View Cart</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section" id="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2>Why Choose Gurukul?</h2>
+                    <ul class="about-list">
+                        <li>✓ Expert instructors with industry experience</li>
+                        <li>✓ Live classes and interactive sessions</li>
+                        <li>✓ Lifetime access to course materials</li>
+                        <li>✓ Career support and job assistance</li>
+                        <li>✓ Affordable pricing with payment plans</li>
+                        <li>✓ Certificate upon completion</li>
+                    </ul>
+                </div>
+                <div class="about-stats">
+                    <div class="stat">
+                        <h3>50K+</h3>
+                        <p>Students Enrolled</p>
+                    </div>
+                    <div class="stat">
+                        <h3>100+</h3>
+                        <p>Courses Available</p>
+                    </div>
+                    <div class="stat">
+                        <h3>4.8/5</h3>
+                        <p>Average Rating</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="newsletter-section">
+        <div class="container">
+            <h2>Subscribe to Our Newsletter</h2>
+            <p>Get updates on new courses and learning opportunities</p>
+            <form class="newsletter-form" id="newsletterForm">
+                <input type="email" placeholder="Enter your email" required>
+                <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>About Gurukul</h3>
+                    <p>We provide high-quality online education to help you advance your career in technology and innovation.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#courses">Courses</a></li>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Follow Us</h3>
+                    <div class="social-links">
+                        <a href="#">Instagram</a>
+                        <a href="#">LinkedIn</a>
+                        <a href="#">YouTube</a>
+                        <a href="#">Twitter</a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p>Email: info@gurukul.com</p>
+                    <p>Phone: +91 XXX XXX XXXX</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Gurukul. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Course Modal -->
+    <div class="modal" id="courseModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle"></h2>
+            <p id="modalDescription"></p>
+            <div class="modal-details">
+                <p><strong>Duration:</strong> <span id="modalDuration"></span></p>
+                <p><strong>Students Enrolled:</strong> <span id="modalStudents"></span></p>
+                <p><strong>Price:</strong> <span id="modalPrice"></span></p>
+            </div>
+            <button class="btn btn-primary" id="enrollBtn">Enroll Now</button>
+        </div>
+    </div>
+
+    <script src="script-api.js"></script>
+    <script>
+        // Check authentication and update navbar
+        window.addEventListener('load', () => {
+            const authLink = document.getElementById('authLink');
+            const currentUser = getCurrentUser();
+
+            if (currentUser) {
+                // User is logged in
+                authLink.innerHTML = `
+                    <a href="${currentUser.role === 'admin' ? 'admin-dashboard.html' : 'user-dashboard.html'}" 
+                       style="color: var(--primary-color); font-weight: bold;">
+                        👤 ${currentUser.name}
+                    </a>
+                `;
+            } else {
+                // User is not logged in
+                authLink.innerHTML = `<a href="login.html" style="color: var(--primary-color); font-weight: bold;">Login</a>`;
+            }
+        });
+    </script>
+</body>
+</html>

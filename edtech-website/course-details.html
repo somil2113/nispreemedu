@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Details - Gurukul</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .course-details-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 3rem;
+            padding: 3rem 0;
+        }
+
+        .course-details-main h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .course-rating {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .stars {
+            color: #ffd200;
+        }
+
+        .course-details-main p {
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+
+        .course-details-section {
+            margin: 2rem 0;
+        }
+
+        .course-details-section h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .course-details-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .course-details-section li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .course-details-section li:before {
+            content: "✓ ";
+            color: var(--success-color);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .course-sidebar {
+            position: sticky;
+            top: 100px;
+            background-color: rgba(29, 41, 61, 0.6);
+            border: 2px solid rgba(0, 210, 148, 0.3);
+            border-radius: 8px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            max-height: fit-content;
+        }
+
+        .course-sidebar-price {
+            font-size: 2rem;
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .course-sidebar-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .sidebar-item strong {
+            min-width: 100px;
+        }
+
+        .course-sidebar .btn {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--primary-color);
+            color: var(--bg-darkest);
+        }
+
+        .course-modules {
+            margin: 2rem 0;
+        }
+
+        .module {
+            background-color: rgba(29, 41, 61, 0.6);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .module:hover {
+            box-shadow: 0 4px 12px rgba(0, 210, 148, 0.2);
+            border-color: rgba(0, 210, 148, 0.3);
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-primary);
+        }
+
+        .module-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .module-lessons {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .module.active .module-lessons {
+            display: block;
+        }
+
+        .lesson {
+            padding: 0.5rem 0;
+            margin-left: 1rem;
+            border-left: 2px solid var(--primary-color);
+            padding-left: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .lesson-icon {
+            margin-right: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .course-details-container {
+                grid-template-columns: 1fr;
+            }
+
+            .course-sidebar {
+                position: relative;
+                top: 0;
+            }
+
+            .course-details-main h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-wrapper">
+                <div class="logo" onclick="window.location.href='index.html'" style="cursor: pointer;">Gurukul</div>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html#courses">Courses</a></li>
+                    <li><a href="index.html#about">About</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                    <li><a href="checkout.html" style="color: var(--primary-color); font-weight: bold;">🛒 Cart</a></li>
+                </ul>
+                <button class="hamburger" id="hamburger">☰</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div style="padding: 1rem 0; background-color: var(--bg-card); border-bottom: 1px solid var(--border-color);">
+        <div class="container">
+            <a href="index.html" style="color: var(--primary-color); text-decoration: none;">Home</a>
+            <span style="margin: 0 0.5rem; color: var(--text-tertiary);">/</span>
+            <a href="index.html#courses" style="color: var(--primary-color); text-decoration: none;">Courses</a>
+            <span style="margin: 0 0.5rem; color: var(--text-tertiary);">/</span>
+            <span id="breadcrumbCourse" style="color: var(--text-secondary);"></span>
+        </div>
+    </div>
+
+    <!-- Course Details Section -->
+    <section style="padding: 3rem 0; background-color: var(--bg-darkest);">
+        <div class="container">
+            <div class="course-details-container">
+                <!-- Main Content -->
+                <div class="course-details-main">
+                    <h1 id="courseTitle"></h1>
+                    <div class="course-rating">
+                        <div class="stars">★★★★★</div>
+                        <span>(2,450 reviews)</span>
+                        <span id="courseEnrolled"></span>
+                    </div>
+
+                    <p id="courseDescription"></p>
+
+                    <!-- What You'll Learn -->
+                    <div class="course-details-section">
+                        <h3>What You'll Learn</h3>
+                        <ul id="learningPoints">
+                            <!-- Populated by JavaScript -->
+                        </ul>
+                    </div>
+
+                    <!-- Course Modules -->
+                    <div class="course-details-section">
+                        <h3>Course Modules</h3>
+                        <div class="course-modules" id="courseModules">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Requirements -->
+                    <div class="course-details-section">
+                        <h3>Requirements</h3>
+                        <ul id="requirements">
+                            <!-- Populated by JavaScript -->
+                        </ul>
+                    </div>
+
+                    <!-- Instructor -->
+                    <div class="course-details-section">
+                        <h3>About the Instructor</h3>
+                        <p><strong>Expert Instructors</strong></p>
+                        <p>Our instructors have 15+ years of industry experience and are committed to providing you with the best learning experience. They are available during live sessions to answer your questions.</p>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="course-sidebar">
+                    <div class="course-sidebar-price" id="courseSidebarPrice"></div>
+                    <button class="btn btn-primary" id="buyNowBtn">Buy Now</button>
+                    <button class="btn btn-secondary" id="addCartBtn">Add to Cart</button>
+
+                    <div class="course-sidebar-info">
+                        <div class="sidebar-item">
+                            <span>⏱️</span>
+                            <span><strong>Duration:</strong> <span id="sideDuration"></span></span>
+                        </div>
+                        <div class="sidebar-item">
+                            <span>👥</span>
+                            <span><strong>Students:</strong> <span id="sideStudents"></span></span>
+                        </div>
+                        <div class="sidebar-item">
+                            <span>📚</span>
+                            <span><strong>Lessons:</strong> <span id="sideLessons">45</span></span>
+                        </div>
+                        <div class="sidebar-item">
+                            <span>🎓</span>
+                            <span><strong>Certificate:</strong> Yes</span>
+                        </div>
+                        <div class="sidebar-item">
+                            <span>🔄</span>
+                            <span><strong>Lifetime Access:</strong> Yes</span>
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                        <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-bottom: 1rem;">
+                            ✓ 30-day money-back guarantee<br>
+                            ✓ Full lifetime access<br>
+                            ✓ Certificate on completion
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>About Gurukul</h3>
+                    <p>We provide high-quality online education to help you advance your career in technology and innovation.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="index.html#courses">Courses</a></li>
+                        <li><a href="index.html#about">About Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Follow Us</h3>
+                    <div class="social-links">
+                        <a href="#">Instagram</a>
+                        <a href="#">LinkedIn</a>
+                        <a href="#">YouTube</a>
+                        <a href="#">Twitter</a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p>Email: info@gurukul.com</p>
+                    <p>Phone: +91 XXX XXX XXXX</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Gurukul. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script-api.js"></script>
+    <script>
+        // Get course from URL parameter (course ID)
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseId = urlParams.get('id');
+        
+        let course = null;
+        
+        // Initialize page once course data is available
+        async function initializePage() {
+            console.log(`Loading course with ID: ${courseId}`);
+            
+            // Fetch course from API
+            course = await getCourseById(courseId);
+            
+            if (!course) {
+                console.error('Course not found');
+                document.getElementById('courseTitle').textContent = 'Course not found';
+                return;
+            }
+            
+            console.log('Course loaded:', course);
+            
+            // Use actual course data from API
+            document.getElementById('breadcrumbCourse').textContent = course.title;
+            document.getElementById('courseTitle').textContent = course.title;
+            document.getElementById('courseDescription').textContent = course.description || 'No description available';
+            document.getElementById('courseEnrolled').textContent = `${course.students} students enrolled`;
+            document.getElementById('courseSidebarPrice').textContent = `₹${course.price.toLocaleString()}`;
+            document.getElementById('sideDuration').textContent = course.duration;
+            document.getElementById('sideStudents').textContent = course.students;
+
+            // Populate learning points from API data
+            const learningList = document.getElementById('learningPoints');
+            learningList.innerHTML = '';
+            if (course.learningPoints && course.learningPoints.length > 0) {
+                course.learningPoints.forEach(point => {
+                    const li = document.createElement('li');
+                    li.textContent = point;
+                    learningList.appendChild(li);
+                });
+            }
+
+            // Populate requirements from API data
+            const requirementsList = document.getElementById('requirements');
+            requirementsList.innerHTML = '';
+            if (course.requirements && course.requirements.length > 0) {
+                course.requirements.forEach(req => {
+                    const li = document.createElement('li');
+                    li.textContent = req;
+                    requirementsList.appendChild(li);
+                });
+            }
+
+            // Populate modules from API data
+            const modulesContainer = document.getElementById('courseModules');
+            modulesContainer.innerHTML = '';
+            if (course.modules && course.modules.length > 0) {
+                course.modules.forEach((module, index) => {
+                    const moduleDiv = document.createElement('div');
+                    moduleDiv.className = 'module';
+                    moduleDiv.innerHTML = `
+                        <div class="module-header">
+                            <div class="module-title">${module.title}</div>
+                            <div style="font-size: 1.2rem;">▼</div>
+                        </div>
+                        <div class="module-lessons">
+                            ${module.lessons.map(lesson => `<div class="lesson"><span class="lesson-icon">📝</span>${lesson}</div>`).join('')}
+                        </div>
+                    `;
+                    moduleDiv.addEventListener('click', function() {
+                        this.classList.toggle('active');
+                    });
+                    modulesContainer.appendChild(moduleDiv);
+                });
+            }
+        }
+
+        // Call initializePage when page loads
+        window.addEventListener('load', initializePage);
+
+        // Buy Now - Redirect to checkout with this course
+        document.addEventListener('DOMContentLoaded', function() {
+            const buyNowBtn = document.getElementById('buyNowBtn');
+            if (buyNowBtn) {
+                buyNowBtn.addEventListener('click', function() {
+                    if (!course) {
+                        alert('Course not loaded yet');
+                        return;
+                    }
+                    
+                    if (!isUserLoggedIn()) {
+                        if (confirm('You need to login to purchase courses. Redirect to login?')) {
+                            window.location.href = 'login.html';
+                        }
+                        return;
+                    }
+
+                    localStorage.setItem('selectedCourse', JSON.stringify({
+                        id: course._id,
+                        title: course.title,
+                        price: course.price
+                    }));
+                    window.location.href = 'checkout.html';
+                });
+            }
+
+            // Add to Cart
+            const addCartBtn = document.getElementById('addCartBtn');
+            if (addCartBtn) {
+                addCartBtn.addEventListener('click', function() {
+                    if (!course) {
+                        alert('Course not loaded yet');
+                        return;
+                    }
+                    
+                    if (!isUserLoggedIn()) {
+                        if (confirm('You need to login to add courses to cart. Redirect to login?')) {
+                            window.location.href = 'login.html';
+                        }
+                        return;
+                    }
+
+                    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                    const courseItem = {
+                        id: course._id,
+                        title: course.title,
+                        price: course.price,
+                        quantity: 1
+                    };
+                    
+                    const existingItem = cart.find(item => item.id === course._id);
+                    if (!existingItem) {
+                        cart.push(courseItem);
+                        localStorage.setItem('cart', JSON.stringify(cart));
+                        alert(`${course.title} added to cart!`);
+                    } else {
+                        alert('This course is already in your cart!');
+                    }
+                });
+            }
+        });
+
+        // Hamburger menu
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburger = document.getElementById('hamburger');
+            const navLinks = document.querySelector('.nav-links');
+            
+            if (hamburger) {
+                hamburger.addEventListener('click', function() {
+                    navLinks.classList.toggle('active');
+                });
+            }
+
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', function() {
+                    navLinks?.classList.remove('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
