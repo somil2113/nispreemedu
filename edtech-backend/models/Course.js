@@ -11,7 +11,17 @@ const courseSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        enum: ['web-development', 'data-science', 'cloud', 'ai-ml'],
+        enum: [
+            'web-development',
+            'data-science',
+            'cloud',
+            'ai-ml',
+            'music-creative',
+            'social-humanities',
+            'pure-sciences',
+            'mathematics-logic',
+            'liberal-arts'
+        ],
         required: true,
     },
     price: {

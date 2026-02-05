@@ -42,10 +42,15 @@
             <!-- Category Filter -->
             <div class="filter-section">
                 <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="ai-ml">AI & ML</button>
                 <button class="filter-btn" data-filter="web-development">Web Development</button>
                 <button class="filter-btn" data-filter="data-science">Data Science</button>
                 <button class="filter-btn" data-filter="cloud">Cloud & DevOps</button>
-                <button class="filter-btn" data-filter="ai-ml">AI & ML</button>
+                <button class="filter-btn" data-filter="music-creative">🎵 Music & Creative</button>
+                <button class="filter-btn" data-filter="social-humanities">🏛️ Social Sciences</button>
+                <button class="filter-btn" data-filter="pure-sciences">🔬 Pure Sciences</button>
+                <button class="filter-btn" data-filter="mathematics-logic">📐 Mathematics</button>
+                <button class="filter-btn" data-filter="liberal-arts">✍️ Liberal Arts</button>
             </div>
 
             <!-- Courses Grid -->
@@ -165,7 +170,12 @@
                 'web-development': 'Web Development',
                 'data-science': 'Data Science',
                 'cloud': 'Cloud & DevOps',
-                'ai-ml': 'AI & ML'
+                'ai-ml': 'AI & ML',
+                'music-creative': '🎵 Music & Creative',
+                'social-humanities': '🏛️ Social Sciences',
+                'pure-sciences': '🔬 Pure Sciences',
+                'mathematics-logic': '📐 Mathematics',
+                'liberal-arts': '✍️ Liberal Arts'
             };
             return labelMap[category] || 'Course';
         }
