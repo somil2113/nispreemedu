@@ -205,7 +205,7 @@ const courses = [
         students: "1.2K",
         price: 29999,
         description: "Mastering scales, chords, and melody for modern music production.",
-        image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&h=400&fit=crop",
+        image: "https://plus.unsplash.com/premium_photo-1723618909795-f5ee30cf5697?q=80&w=1678&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         instructor: "Music Theorist",
         modules: [
             { title: "Music Fundamentals", lessons: ["Scales", "Chords", "Progressions"] },
@@ -221,7 +221,7 @@ const courses = [
         students: "800",
         price: 35000,
         description: "Understanding the soul of Indian music through Raga and Taal.",
-        image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400&fit=crop",
+        image: "https://images.unsplash.com/photo-1633411988188-6e63354a9019?q=80&w=2062&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         instructor: "Classical Maestro",
         modules: [
             { title: "Raga System", lessons: ["Raga Theory", "Classification", "Performance"] },
@@ -237,7 +237,7 @@ const courses = [
         students: "950",
         price: 24999,
         description: "Licensing, distribution, and royalties in the modern music industry.",
-        image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&h=400&fit=crop",
+        image: "https://images.unsplash.com/photo-1593697972646-2f348871bd56?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         instructor: "Music Exec",
         modules: [
             { title: "Distribution", lessons: ["Platforms", "Royalties", "Licensing"] },
@@ -253,7 +253,7 @@ const courses = [
         students: "1.1K",
         price: 32999,
         description: "Creating unique synth patches and textures with Logic Pro.",
-        image: "https://images.unsplash.com/photo-1511379938547-c1f69b13d835?w=600&h=400&fit=crop",
+        image: "https://images.unsplash.com/photo-1703117104853-31800b2e2a70?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         instructor: "Sound Designer",
         modules: [
             { title: "Logic Basics", lessons: ["Interface", "Workflow", "Plugins"] },
@@ -269,7 +269,7 @@ const courses = [
         students: "1.4K",
         price: 27999,
         description: "Professional techniques for aspiring singers and performers.",
-        image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&h=400&fit=crop",
+        image: "https://images.unsplash.com/photo-1595422656857-ced3a4a0ce25?q=80&w=816&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         instructor: "Vocal Coach",
         modules: [
             { title: "Fundamentals", lessons: ["Breathing", "Posture", "Warm-ups"] },
@@ -285,7 +285,7 @@ const courses = [
         students: "1.3K",
         price: 25999,
         description: "Crafting radio-ready songs with compelling lyrics and hooks.",
-        image: "https://images.unsplash.com/photo-1484807352052-23338109c257?w=600&h=400&fit=crop",
+        image: "https://plus.unsplash.com/premium_photo-1726848367163-e16a527ddd84?q=80&w=776&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         instructor: "Hit Songwriter",
         modules: [
             { title: "Songcraft", lessons: ["Song Structure", "Lyrics", "Melodies"] },
@@ -301,7 +301,7 @@ const courses = [
         students: "680",
         price: 33999,
         description: "Creating realistic sound effects for visual media.",
-        image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400&fit=crop",
+        image: "https://images.unsplash.com/photo-1763627516727-2ca3e324fa59?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         instructor: "Foley Artist",
         modules: [
             { title: "Foley Basics", lessons: ["Tools", "Techniques", "Recording"] },
@@ -317,7 +317,7 @@ const courses = [
         students: "920",
         price: 39999,
         description: "Visual storytelling for music videos on a budget.",
-        image: "https://images.unsplash.com/photo-1533900198318-6b8da08a523e?w=600&h=400&fit=crop",
+        image: "https://plus.unsplash.com/premium_photo-1682146749338-f380c93c8dec?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         instructor: "Music Video Director",
         modules: [
             { title: "Cinematography", lessons: ["Camera Techniques", "Lighting", "Composition"] },
@@ -333,7 +333,7 @@ const courses = [
         students: "1.5K",
         price: 22999,
         description: "A journey through musical genres and their evolution.",
-        image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop",
+        image: "https://images.unsplash.com/photo-1583331083321-0d4fd2b03cc5?q=80&w=1560&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         instructor: "Music Historian",
         modules: [
             { title: "Classical Era", lessons: ["Bach", "Mozart", "Beethoven"] },
@@ -349,7 +349,7 @@ const courses = [
         students: "850",
         price: 31999,
         description: "Breaking the rules of conventional music through jazz improvisation.",
-        image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&h=400&fit=crop",
+        image: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         instructor: "Jazz Musician",
         modules: [
             { title: "Jazz Basics", lessons: ["Standards", "Scales", "Chords"] },
