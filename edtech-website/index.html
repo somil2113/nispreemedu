@@ -159,13 +159,143 @@
 
     <script src="script-api.js"></script>
     <script>
-        // Check authentication and update navbar
-        window.addEventListener('load', () => {
+        // Helper functions for UI
+        function getCategoryLabel(category) {
+            const labelMap = {
+                'web-development': 'Web Development',
+                'data-science': 'Data Science',
+                'cloud': 'Cloud & DevOps',
+                'ai-ml': 'AI & ML'
+            };
+            return labelMap[category] || 'Course';
+        }
+
+        function createCourseCard(course) {
+            const card = document.createElement('div');
+            card.className = 'course-card';
+            card.style.cursor = 'pointer';
+            card.innerHTML = `
+                <div class="course-image" style="background-image: url('${course.image}'); background-size: cover; background-position: center;"></div>
+                <div class="course-content">
+                    <span class="course-badge">${getCategoryLabel(course.category)}</span>
+                    <h3>${course.title}</h3>
+                    <div class="course-info">
+                        <p>⏱️ ${course.duration}</p>
+                        <p>👥 ${course.students} Students Enrolled</p>
+                    </div>
+                    <div class="course-footer">
+                        <span class="course-price">₹${typeof course.price === 'number' ? course.price.toLocaleString() : course.price}</span>
+                        <button class="course-btn" onclick="event.stopPropagation(); buyNow('${course._id}')">Buy Now</button>
+                    </div>
+                </div>
+            `;
+            card.addEventListener('click', function() {
+                window.location.href = `course-details.html?id=${course._id}`;
+            });
+            return card;
+        }
+
+        function displayCourses(coursesData, filter = 'all') {
+            const coursesGrid = document.getElementById('coursesGrid');
+            coursesGrid.innerHTML = '';
+
+            const filteredCourses = filter === 'all' 
+                ? coursesData 
+                : coursesData.filter(course => course.category === filter);
+
+            if (filteredCourses.length === 0) {
+                coursesGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No courses found</p>';
+                return;
+            }
+
+            filteredCourses.forEach(course => {
+                const courseCard = createCourseCard(course);
+                coursesGrid.appendChild(courseCard);
+            });
+        }
+
+        function buyNow(courseId) {
+            if (!isUserLoggedIn()) {
+                if (confirm('You need to login to purchase courses. Redirect to login?')) {
+                    window.location.href = 'login.html';
+                }
+                return;
+            }
+
+            const course = window.allCourses.find(c => c._id === courseId);
+            if (!course) return;
+            
+            localStorage.setItem('selectedCourse', JSON.stringify({
+                id: course._id,
+                title: course.title,
+                price: course.price
+            }));
+            window.location.href = 'checkout.html';
+        }
+
+        // Setup filter buttons
+        function setupFilterButtons(coursesData) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    displayCourses(coursesData, this.dataset.filter);
+                });
+            });
+        }
+
+        // Setup other event listeners
+        function setupEventListeners() {
+            const hamburger = document.getElementById('hamburger');
+            const navLinks = document.querySelector('.nav-links');
+            
+            if (hamburger) {
+                hamburger.addEventListener('click', function() {
+                    navLinks.classList.toggle('active');
+                });
+            }
+
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', function() {
+                    if (navLinks) navLinks.classList.remove('active');
+                });
+            });
+
+            const newsletterForm = document.getElementById('newsletterForm');
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    alert('Thank you for subscribing!');
+                    this.reset();
+                });
+            }
+
+            document.querySelector('.close').addEventListener('click', function() {
+                document.getElementById('courseModal').style.display = 'none';
+            });
+
+            window.addEventListener('click', function(e) {
+                const modal = document.getElementById('courseModal');
+                if (e.target == modal) {
+                    modal.style.display = 'none';
+                }
+            });
+
+            const exploreBtns = document.querySelectorAll('.btn-primary');
+            if (exploreBtns.length > 0) {
+                exploreBtns[0].addEventListener('click', function() {
+                    document.getElementById('courses').scrollIntoView({ behavior: 'smooth' });
+                });
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', async () => {
+            // Update navbar
             const authLink = document.getElementById('authLink');
             const currentUser = getCurrentUser();
 
             if (currentUser) {
-                // User is logged in
                 authLink.innerHTML = `
                     <a href="${currentUser.role === 'admin' ? 'admin-dashboard.html' : 'user-dashboard.html'}" 
                        style="color: var(--primary-color); font-weight: bold;">
@@ -173,9 +303,16 @@
                     </a>
                 `;
             } else {
-                // User is not logged in
                 authLink.innerHTML = `<a href="login.html" style="color: var(--primary-color); font-weight: bold;">Login</a>`;
             }
+
+            // Fetch and display courses
+            console.log('Loading courses...');
+            const coursesData = await fetchCourses();
+            window.allCourses = coursesData;
+            displayCourses(coursesData, 'all');
+            setupFilterButtons(coursesData);
+            setupEventListeners();
         });
     </script>
 </body>
