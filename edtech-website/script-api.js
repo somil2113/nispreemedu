@@ -1,5 +1,6 @@
 // API Configuration
-const API_URL = 'http://localhost:5001/api';
+// uses CONFIG from config.js if available, otherwise fallback (for testing without config.js)
+const API_URL = (typeof CONFIG !== 'undefined' && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : 'http://localhost:5001/api';
 
 console.log('✓ script-api.js loaded');
 console.log(`API URL: ${API_URL}`);

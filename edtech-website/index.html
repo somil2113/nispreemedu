@@ -162,6 +162,7 @@
         </div>
     </div>
 
+    <script src="config.js"></script>
     <script src="script-api.js"></script>
     <script>
         // Helper functions for UI
@@ -321,7 +322,8 @@
             // Fetch and display courses from API
             console.log('Fetching courses from API...');
             try {
-                const apiUrl = 'http://localhost:5001/api/courses';
+                const baseUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : 'http://localhost:5001/api';
+                const apiUrl = `${baseUrl}/courses`;
                 console.log('API URL:', apiUrl);
                 
                 const response = await fetch(apiUrl, {

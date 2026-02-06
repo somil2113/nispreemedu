@@ -17,3 +17,7 @@ yarn-error.log*
 .cache/
 .next/
 out/
+# Project specific
+data/
+logs/
+

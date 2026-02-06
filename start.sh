@@ -30,12 +30,13 @@ echo ""
 
 # Create a log directory
 mkdir -p logs
+mkdir -p data
 
 # Function to cleanup on exit
 cleanup() {
     echo ""
     echo -e "${YELLOW}Shutting down services...${NC}"
-    kill $MONGO_PID $BACKEND_PID 2>/dev/null
+    kill $MONGO_PID $BACKEND_PID $FRONTEND_PID 2>/dev/null
     echo -e "${GREEN}✅ Services stopped${NC}"
 }
 
@@ -44,7 +45,7 @@ trap cleanup EXIT
 
 # Start MongoDB in background
 echo -e "${YELLOW}1️⃣  Starting MongoDB...${NC}"
-mongod --logpath logs/mongodb.log --fork > /dev/null 2>&1
+mongod --dbpath data --logpath logs/mongodb.log --fork > /dev/null 2>&1
 MONGO_PID=$!
 sleep 2
 
