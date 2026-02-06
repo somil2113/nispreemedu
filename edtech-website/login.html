@@ -478,21 +478,31 @@
                 return;
             }
 
-            // Call API to login user
-            const result = await loginUser(email, password);
+            const loadingBtn = document.querySelector('#login-form .btn-login');
+            const originalText = loadingBtn.textContent;
+            loadingBtn.textContent = 'Logging in...';
+            loadingBtn.disabled = true;
 
-            if (!result.success) {
-                errorDiv.textContent = result.error || 'Login failed. Please try again.';
+            try {
+                const result = await loginUser(email, password);
+
+                if (result.success) {
+                    const user = result.data.user;
+                    if (user.role === 'admin') {
+                        window.location.href = 'admin-dashboard.html';
+                    } else {
+                        window.location.href = 'user-dashboard.html';
+                    }
+                } else {
+                    errorDiv.textContent = result.error || 'Invalid credentials';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'An error occurred. Please try again.';
                 errorDiv.style.display = 'block';
-                return;
-            }
-
-            // Login successful
-            const user = result.data.user;
-            if (user.role === 'admin') {
-                window.location.href = 'admin-dashboard.html';
-            } else {
-                window.location.href = 'user-dashboard.html';
+            } finally {
+                loadingBtn.textContent = originalText;
+                loadingBtn.disabled = false;
             }
         }
 
@@ -501,7 +511,7 @@
             const email = document.getElementById('registerEmail').value;
             const password = document.getElementById('registerPassword').value;
             const confirmPassword = document.getElementById('registerConfirmPassword').value;
-            const role = document.getElementById('registerRole').value;
+            const role = document.getElementById('registerRole').value || 'student';
             const agreeTerms = document.getElementById('agreeTerms').checked;
             const errorDiv = document.getElementById('registerError');
             const successDiv = document.getElementById('registerSuccess');
@@ -539,26 +549,37 @@
                 return;
             }
 
-            // Call API to register user in MongoDB
-            const result = await registerUser(name, email, password, role);
+            const loadingBtn = document.querySelector('#register-form .btn-login');
+            const originalText = loadingBtn.textContent;
+            loadingBtn.textContent = 'Creating Account...';
+            loadingBtn.disabled = true;
 
-            if (!result.success) {
-                errorDiv.textContent = result.error || 'Registration failed. Please try again.';
-                errorDiv.style.display = 'block';
-                return;
-            }
+            try {
+                const result = await registerUser(name, email, password, role);
 
-            successDiv.textContent = 'Account created successfully! Redirecting...';
-            successDiv.style.display = 'block';
+                if (result.success) {
+                    successDiv.textContent = 'Account created successfully! Redirecting...';
+                    successDiv.style.display = 'block';
 
-            setTimeout(() => {
-                const user = result.data.user;
-                if (user.role === 'admin') {
-                    window.location.href = 'admin-dashboard.html';
+                    setTimeout(() => {
+                        const user = result.data.user;
+                        if (user.role === 'admin') {
+                            window.location.href = 'admin-dashboard.html';
+                        } else {
+                            window.location.href = 'user-dashboard.html';
+                        }
+                    }, 1500);
                 } else {
-                    window.location.href = 'user-dashboard.html';
+                    errorDiv.textContent = result.error || 'Registration failed';
+                    errorDiv.style.display = 'block';
                 }
-            }, 1500);
+            } catch (error) {
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.style.display = 'block';
+            } finally {
+                loadingBtn.textContent = originalText;
+                loadingBtn.disabled = false;
+            }
         }
 
         // Check if already logged in

@@ -532,6 +532,7 @@
         </div>
     </footer>
 
+    <script src="script-api.js"></script>
     <script>
         let discountAmount = 0;
 
@@ -707,9 +708,9 @@
             });
         }
 
-        function completeCheckout() {
+        async function completeCheckout() {
             // Check if user is logged in
-            const currentUser = getCurrentUser();
+            const currentUser = getCurrentUser(); // using script-api helper
             if (!currentUser) {
                 if (confirm('You need to login to complete purchase. Redirect to login?')) {
                     window.location.href = 'login.html';
@@ -739,54 +740,88 @@
                 return;
             }
 
-            // Create order
-            const items = JSON.parse(localStorage.getItem('checkoutItems')) || [];
-            const subtotal = items.reduce((sum, item) => sum + parseInt(item.price), 0);
-            const tax = Math.round(subtotal * 0.18);
-            const total = subtotal - discountAmount + tax;
+            const checkoutBtn = document.getElementById('completeCheckoutBtn');
+            const originalText = checkoutBtn.innerText;
+            checkoutBtn.innerText = 'Processing...';
+            checkoutBtn.disabled = true;
 
-            const order = {
-                id: 'ORD-' + Date.now(),
-                firstName: document.getElementById('firstName').value,
-                lastName: document.getElementById('lastName').value,
-                email: document.getElementById('email').value,
-                items: items,
-                subtotal: subtotal,
-                discount: discountAmount,
-                tax: tax,
-                total: total,
-                paymentMethod: paymentMethod,
-                date: new Date().toLocaleString()
-            };
+            try {
+                // Create order via API
+                const items = JSON.parse(localStorage.getItem('checkoutItems')) || [];
+                
+                if (items.length === 0) {
+                     alert('Cart is empty!');
+                     return;
+                }
 
-            // Save order
-            const orders = JSON.parse(localStorage.getItem('orders')) || [];
-            orders.push(order);
-            localStorage.setItem('orders', JSON.stringify(orders));
+                // Collect billing info
+                const billingInfo = {
+                    name: document.getElementById('firstName').value + ' ' + document.getElementById('lastName').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    address: document.getElementById('address').value,
+                    city: document.getElementById('city').value,
+                    state: document.getElementById('state').value,
+                    zipCode: document.getElementById('postalCode').value,
+                    country: document.getElementById('country').value
+                };
 
-            // Add courses to user's enrolled courses
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const userIndex = users.findIndex(u => u.id === currentUser.id);
-            if (userIndex !== -1) {
-                items.forEach(item => {
-                    if (!users[userIndex].enrolledCourses.includes(item.id)) {
-                        users[userIndex].enrolledCourses.push(item.id);
+                let successCount = 0;
+                let failCount = 0;
+                let lastOrderId = '';
+
+                // Backend currently supports single course per order, so we loop
+                for (const item of items) {
+                    const price = parseInt(item.price);
+                    
+                    const orderData = {
+                        courseId: item.id || item._id, // Handle both formats
+                        amount: price,
+                        discount: 0, // Ignoring partial discount for simplicity
+                        tax: Math.round(price * 0.18),
+                        paymentMethod: paymentMethod,
+                        billingInfo: billingInfo,
+                        promoCode: document.getElementById('promoCode').value || null
+                    };
+
+                    const result = await createOrder(orderData);
+                    if (result.success) {
+                        successCount++;
+                         lastOrderId = result.data._id || result.data.id;
+                    } else {
+                        console.error('Order failed for item:', item.title, result.error);
+                        failCount++;
                     }
-                });
-                localStorage.setItem('users', JSON.stringify(users));
+                }
+
+                if (successCount > 0) {
+                    // Clear cart
+                    localStorage.removeItem('checkoutItems');
+                    localStorage.removeItem('cart');
+                    localStorage.removeItem('selectedCourse');
+
+                    // Show success message
+                    const msg = failCount > 0 
+                        ? `Orders placed partially. ${successCount} successful, ${failCount} failed.`
+                        : `Order placed successfully!\nOrder ID: ${lastOrderId}\nTotal items: ${successCount}\n\nCheck your email for confirmation.`;
+                    
+                    alert(msg);
+
+                    // Redirect to user dashboard
+                    setTimeout(() => {
+                        window.location.href = 'user-dashboard.html';
+                    }, 1000);
+                } else {
+                    alert('Failed to place order. Please try again.');
+                }
+
+            } catch (error) {
+                console.error('Checkout error:', error);
+                alert('An error occurred during checkout.');
+            } finally {
+                 checkoutBtn.innerText = originalText;
+                 checkoutBtn.disabled = false;
             }
-
-            // Clear cart
-            localStorage.removeItem('checkoutItems');
-            localStorage.removeItem('cart');
-
-            // Show success message
-            alert(`Order placed successfully!\nOrder ID: ${order.id}\nTotal: ₹${total.toLocaleString()}\n\nCheck your email for confirmation.`);
-
-            // Redirect to user dashboard
-            setTimeout(() => {
-                window.location.href = 'user-dashboard.html';
-            }, 2000);
         }
     </script>
 </body>

@@ -77,6 +77,28 @@ function logoutUser() {
     localStorage.removeItem('checkoutItems');
 }
 
+async function fetchUserProfile() {
+    try {
+        const response = await fetch(`${API_URL}/auth/me`, {
+            headers: {
+                'Authorization': `Bearer ${getAuthToken()}`
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to fetch profile');
+        
+        const data = await response.json();
+        // Update local storage
+        if (data.user) {
+            localStorage.setItem('currentUser', JSON.stringify(data.user));
+        }
+        return data.user;
+    } catch (error) {
+        console.error('Error fetching profile:', error);
+        return null;
+    }
+}
+
 // ============================================
 // COURSE FUNCTIONS
 // ============================================

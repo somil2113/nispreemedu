@@ -575,7 +575,15 @@
         const currentUser = checkAuth();
 
         // Initialize dashboard
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => {
+            // Fetch fresh user data
+            if (typeof fetchUserProfile === 'function') {
+                const refreshedUser = await fetchUserProfile();
+                if (refreshedUser) {
+                    Object.assign(currentUser, refreshedUser);
+                }
+            }
+            
             loadUserData();
             displayDashboardCourses();
             loadEnrolledCourses();
@@ -590,10 +598,8 @@
             document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
         }
 
-        function displayDashboardCourses() {
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(u => u.id === currentUser.id);
-            const enrolledCourses = user?.enrolledCourses || [];
+        async function displayDashboardCourses() {
+            const enrolledCourses = currentUser?.enrolledCourses || [];
 
             document.getElementById('enrolledCount').textContent = enrolledCourses.length;
             document.getElementById('learningHours').textContent = enrolledCourses.length * 5;
@@ -602,10 +608,23 @@
             // Continue Learning
             const continueLearning = document.getElementById('continueLearning');
             if (enrolledCourses.length > 0) {
+                // Fetch course details for enrolled courses if needed, or assume IDs
+                // Assuming enrolledCourses contains objects with courseId or full course objects
+                // Backend usually stores { courseId: ..., ... }
+                // Let's handle both
+                
+                // Fetch all courses to map details
+                // This is inefficient but consistent with existing app structure
+                if (window.courses.length === 0 && typeof fetchCourses === 'function') {
+                    await fetchCourses();
+                }
+                
                 const recentCourses = enrolledCourses.slice(0, 3);
-                continueLearning.innerHTML = recentCourses.map(courseId => 
-                    createCourseCard(courseId, true)
-                ).join('');
+                
+                continueLearning.innerHTML = recentCourses.map(enrollment => {
+                    const courseId = enrollment.courseId || enrollment; // Handle object or ID
+                    return createCourseCard(courseId, true);
+                }).join('');
             } else {
                 continueLearning.innerHTML = `
                     <div class="empty-state" style="grid-column: 1/-1;">
@@ -618,28 +637,41 @@
             }
 
             // Recommended courses
+            // Ensure window.courses is populated (from script-api logic or separate fetch)
+             if ((!window.courses || window.courses.length === 0) && typeof fetchCourses === 'function') {
+                 try {
+                    window.courses = await fetchCourses();
+                 } catch(e) { console.error(e); }
+            }
             const allCourses = window.courses || [];
-            const recommended = allCourses.filter(c => !enrolledCourses.includes(c.id)).slice(0, 3);
+             
+            // Filter out enrolled
+            const enrolledIds = enrolledCourses.map(e => (e.courseId || e).toString());
+            const recommended = allCourses.filter(c => !enrolledIds.includes(c._id)).slice(0, 3);
+            
             const recommendedDiv = document.getElementById('recommendedCourses');
             if (recommended.length > 0) {
                 recommendedDiv.innerHTML = recommended.map(course => 
-                    createCourseCard(course.id)
+                    createCourseCard(course._id)
                 ).join('');
             } else {
                 recommendedDiv.innerHTML = '<p style="color: var(--text-secondary);">No more courses available</p>';
             }
         }
 
-        function loadEnrolledCourses() {
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(u => u.id === currentUser.id);
-            const enrolledCourses = user?.enrolledCourses || [];
+        async function loadEnrolledCourses() {
+            const enrolledCourses = currentUser?.enrolledCourses || [];
 
             const container = document.getElementById('enrolledCourses');
             if (enrolledCourses.length > 0) {
-                container.innerHTML = enrolledCourses.map(courseId => 
-                    createCourseCard(courseId, true)
-                ).join('');
+                 if ((!window.courses || window.courses.length === 0) && typeof fetchCourses === 'function') {
+                     await fetchCourses();
+                }
+                
+                container.innerHTML = enrolledCourses.map(enrollment => {
+                     const courseId = enrollment.courseId || enrollment;
+                    return createCourseCard(courseId, true);
+                }).join('');
             } else {
                 container.innerHTML = `
                     <div class="empty-state" style="grid-column: 1/-1;">
@@ -652,13 +684,15 @@
             }
         }
 
-        function loadWishlist() {
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(u => u.id === currentUser.id);
-            const wishlist = user?.wishlist || [];
+        async function loadWishlist() {
+            const wishlist = currentUser?.wishlist || [];
 
             const container = document.getElementById('wishlistCourses');
             if (wishlist.length > 0) {
+                 if ((!window.courses || window.courses.length === 0) && typeof fetchCourses === 'function') {
+                     await fetchCourses();
+                }
+
                 container.innerHTML = wishlist.map(courseId => 
                     createCourseCard(courseId)
                 ).join('');
@@ -676,16 +710,22 @@
 
         function createCourseCard(courseId, showProgress = false) {
             const allCourses = window.courses || [];
-            const course = allCourses.find(c => c.id === courseId);
+            // courseId passed might be ID string or object, usually ID string here
+            const idToMatch = (typeof courseId === 'object') ? courseId._id : courseId;
+            
+            const course = allCourses.find(c => c._id === idToMatch || c.id === idToMatch);
+            // Note: MongoDB uses _id, seed/dummy might use id. Checking both.
+            
             if (!course) return '';
 
             const progress = Math.floor(Math.random() * 100);
             const icons = ['🤖', '💻', '📊', '☁️', '🤖', '⚛️', '🔧', '🐳', '🗣️', '⚡', '📈', '☁️'];
-            const icon = icons[courseId - 1] || '📚';
+            // Simple icon selection based on ID length or ref
+            const icon = course.category === 'ai-ml' ? '🤖' : '📚'; 
 
             return `
                 <div class="course-item">
-                    <div class="course-image" data-icon="${icon}">
+                    <div class="course-image" data-icon="${icon}" style="background-image: url('${course.image}'); background-size: cover;">
                         ${showProgress ? `<div class="progress-ring">${progress}%</div>` : ''}
                     </div>
                     <div class="course-content">
