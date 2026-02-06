@@ -459,7 +459,7 @@
             event.target.closest('.role-option').classList.add('selected');
         }
 
-        function handleLogin() {
+        async function handleLogin() {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             const errorDiv = document.getElementById('loginError');
@@ -478,30 +478,17 @@
                 return;
             }
 
-            // Get users from localStorage
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(u => u.email === email);
+            // Call API to login user
+            const result = await loginUser(email, password);
 
-            if (!user) {
-                errorDiv.textContent = 'Email not found. Please sign up first';
-                errorDiv.style.display = 'block';
-                return;
-            }
-
-            if (user.password !== password) {
-                errorDiv.textContent = 'Incorrect password';
+            if (!result.success) {
+                errorDiv.textContent = result.error || 'Login failed. Please try again.';
                 errorDiv.style.display = 'block';
                 return;
             }
 
             // Login successful
-            localStorage.setItem('currentUser', JSON.stringify({
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }));
-
+            const user = result.data.user;
             if (user.role === 'admin') {
                 window.location.href = 'admin-dashboard.html';
             } else {
@@ -509,7 +496,7 @@
             }
         }
 
-        function handleRegister() {
+        async function handleRegister() {
             const name = document.getElementById('registerName').value;
             const email = document.getElementById('registerEmail').value;
             const password = document.getElementById('registerPassword').value;
@@ -552,41 +539,21 @@
                 return;
             }
 
-            // Check if email already exists
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            if (users.find(u => u.email === email)) {
-                errorDiv.textContent = 'Email already registered. Please login instead';
+            // Call API to register user in MongoDB
+            const result = await registerUser(name, email, password, role);
+
+            if (!result.success) {
+                errorDiv.textContent = result.error || 'Registration failed. Please try again.';
                 errorDiv.style.display = 'block';
                 return;
             }
 
-            // Create new user - use selected role (first user will be admin if system is empty)
-            const newUser = {
-                id: 'user_' + Date.now(),
-                name: name,
-                email: email,
-                password: password,
-                role: users.length === 0 ? 'admin' : role,
-                enrolledCourses: [],
-                wishlist: [],
-                createdAt: new Date().toISOString()
-            };
-
-            users.push(newUser);
-            localStorage.setItem('users', JSON.stringify(users));
-
-            successDiv.textContent = 'Account created successfully! Redirecting to login...';
+            successDiv.textContent = 'Account created successfully! Redirecting...';
             successDiv.style.display = 'block';
 
             setTimeout(() => {
-                localStorage.setItem('currentUser', JSON.stringify({
-                    id: newUser.id,
-                    name: newUser.name,
-                    email: newUser.email,
-                    role: newUser.role
-                }));
-
-                if (newUser.role === 'admin') {
+                const user = result.data.user;
+                if (user.role === 'admin') {
                     window.location.href = 'admin-dashboard.html';
                 } else {
                     window.location.href = 'user-dashboard.html';
