@@ -584,9 +584,16 @@ async function buyNow(courseId) {
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({ behavior: 'smooth' });
+        const href = this.getAttribute('href');
+        if (href === '#' || href.length <= 1) return;
+        
+        try {
+            const target = document.querySelector(href);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+        } catch (err) {
+            console.warn('Invalid selector:', href);
         }
     });
 });
