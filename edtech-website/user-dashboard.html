@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard - Gurukul</title>
+    <title>NISPREEM INNOVATIONS</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         .dashboard-container {
@@ -449,7 +449,7 @@
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a href="index.html" class="logo">
-                    📚 Gurukul
+                    <img src="images/logo.png" alt="NISPREEM INNOVATIONS">
                 </a>
             </div>
 
@@ -561,6 +561,7 @@
     </div>
 
     <script src="config.js"></script>
+    <script src="data/courses_data.js"></script>
     <script src="script-api.js"></script>
     <script>
         // Check if user is logged in
@@ -610,22 +611,29 @@
             const continueLearning = document.getElementById('continueLearning');
             if (enrolledCourses.length > 0) {
                 // Fetch course details for enrolled courses if needed, or assume IDs
-                // Assuming enrolledCourses contains objects with courseId or full course objects
-                // Backend usually stores { courseId: ..., ... }
-                // Let's handle both
                 
-                // Fetch all courses to map details
-                // This is inefficient but consistent with existing app structure
-                if (window.courses.length === 0 && typeof fetchCourses === 'function') {
-                    await fetchCourses();
+                // Ensure window.courses is populated (from script-api logic or separate fetch)
+                if ((!window.courses || window.courses.length === 0) && typeof fetchCourses === 'function') {
+                    try {
+                        const response = await fetchCourses();
+                        // Assign the array from response to the global variable
+                        // Note: response is { courses: [...], ... }
+                        window.courses = response.courses || []; 
+                    } catch(e) { console.error(e); }
                 }
                 
                 const recentCourses = enrolledCourses.slice(0, 3);
                 
-                continueLearning.innerHTML = recentCourses.map(enrollment => {
-                    const courseId = enrollment.courseId || enrollment; // Handle object or ID
-                    return createCourseCard(courseId, true);
-                }).join('');
+                // Process these sequentially since getCourseById is async
+                continueLearning.innerHTML = '';
+                for (const enrollment of recentCourses) {
+                    const courseId = enrollment.courseId || enrollment;
+                    const course = await getCourseById(courseId);
+                    if (course) {
+                        const cardHtml = createCourseCard(course, true);
+                        continueLearning.insertAdjacentHTML('beforeend', cardHtml);
+                    }
+                }
             } else {
                 continueLearning.innerHTML = `
                     <div class="empty-state" style="grid-column: 1/-1;">
@@ -641,7 +649,8 @@
             // Ensure window.courses is populated (from script-api logic or separate fetch)
              if ((!window.courses || window.courses.length === 0) && typeof fetchCourses === 'function') {
                  try {
-                    window.courses = await fetchCourses();
+                    const response = await fetchCourses();
+                    window.courses = response.courses || [];
                  } catch(e) { console.error(e); }
             }
             const allCourses = window.courses || [];
@@ -652,9 +661,11 @@
             
             const recommendedDiv = document.getElementById('recommendedCourses');
             if (recommended.length > 0) {
-                recommendedDiv.innerHTML = recommended.map(course => 
-                    createCourseCard(course._id)
-                ).join('');
+                recommendedDiv.innerHTML = '';
+                recommended.forEach(course => {
+                    const cardHtml = createCourseCard(course);
+                    recommendedDiv.insertAdjacentHTML('beforeend', cardHtml);
+                });
             } else {
                 recommendedDiv.innerHTML = '<p style="color: var(--text-secondary);">No more courses available</p>';
             }
@@ -666,13 +677,21 @@
             const container = document.getElementById('enrolledCourses');
             if (enrolledCourses.length > 0) {
                  if ((!window.courses || window.courses.length === 0) && typeof fetchCourses === 'function') {
-                     await fetchCourses();
+                     try {
+                        const response = await fetchCourses();
+                        window.courses = response.courses || [];
+                     } catch(e) {}
                 }
                 
-                container.innerHTML = enrolledCourses.map(enrollment => {
-                     const courseId = enrollment.courseId || enrollment;
-                    return createCourseCard(courseId, true);
-                }).join('');
+                container.innerHTML = '';
+                for (const enrollment of enrolledCourses) {
+                    const courseId = enrollment.courseId || enrollment;
+                    const course = await getCourseById(courseId);
+                    if (course) {
+                        const cardHtml = createCourseCard(course, true);
+                        container.insertAdjacentHTML('beforeend', cardHtml);
+                    }
+                }
             } else {
                 container.innerHTML = `
                     <div class="empty-state" style="grid-column: 1/-1;">
@@ -691,12 +710,20 @@
             const container = document.getElementById('wishlistCourses');
             if (wishlist.length > 0) {
                  if ((!window.courses || window.courses.length === 0) && typeof fetchCourses === 'function') {
-                     await fetchCourses();
+                     try {
+                        const response = await fetchCourses();
+                        window.courses = response.courses || [];
+                     } catch(e) {}
                 }
 
-                container.innerHTML = wishlist.map(courseId => 
-                    createCourseCard(courseId)
-                ).join('');
+                container.innerHTML = '';
+                for (const courseId of wishlist) {
+                    const course = await getCourseById(courseId);
+                    if (course) {
+                        const cardHtml = createCourseCard(course);
+                        container.insertAdjacentHTML('beforeend', cardHtml);
+                    }
+                }
             } else {
                 container.innerHTML = `
                     <div class="empty-state" style="grid-column: 1/-1;">

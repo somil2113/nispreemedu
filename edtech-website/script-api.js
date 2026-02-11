@@ -1,22 +1,57 @@
-// API Configuration
-// uses CONFIG from config.js if available, otherwise fallback (for testing without config.js)
-const API_URL = (typeof CONFIG !== 'undefined' && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : 'http://localhost:5001/api';
-
-console.log('✓ script-api.js loaded');
-console.log(`API URL: ${API_URL}`);
-console.log('Waiting for DOMContentLoaded event...');
-
 // ============================================
+// OFFLINE API HANDLING (Replaces Backend API)
+// ============================================
+
+const STORAGE_KEYS = {
+    USERS: 'gurukul_users',
+    CURRENT_USER: 'currentUser', // Matching existing key
+    AUTH_TOKEN: 'authToken',     // Matching existing key
+    ORDERS: 'gurukul_orders',
+};
+
+// Initialize Mock Data if empty
+function initializeMockData() {
+    console.log('Initializing Offline Mode...');
+    
+    // Create default users if none exist
+    let users = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || '[]');
+    if (users.length === 0) {
+        users = [
+            {
+                _id: 'user_admin_001',
+                name: 'Admin User',
+                email: 'admin@gurukul.com',
+                password: 'password123',
+                role: 'admin',
+                enrolledCourses: [],
+                wishlist: []
+            },
+            {
+                _id: 'user_student_001',
+                name: 'Student User',
+                email: 'student@gurukul.com',
+                password: 'password123',
+                role: 'student',
+                enrolledCourses: [],
+                wishlist: []
+            }
+        ];
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+        console.log('✓ Created default users (admin@gurukul.com / student@gurukul.com)');
+    }
+}
+
+// --------------------------------------------
 // AUTHENTICATION FUNCTIONS
-// ============================================
+// --------------------------------------------
 
 function getCurrentUser() {
-    const currentUser = localStorage.getItem('currentUser');
-    return currentUser ? JSON.parse(currentUser) : null;
+    const userStr = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+    return userStr ? JSON.parse(userStr) : null;
 }
 
 function isUserLoggedIn() {
-    return localStorage.getItem('authToken') !== null;
+    return !!localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 }
 
 function isUserAdmin() {
@@ -25,268 +60,226 @@ function isUserAdmin() {
 }
 
 function getAuthToken() {
-    return localStorage.getItem('authToken');
+    return localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+}
+
+function getAllUsers() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || '[]');
 }
 
 async function registerUser(name, email, password, role = 'student') {
-    try {
-        const response = await fetch(`${API_URL}/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password, role })
-        });
-        const data = await response.json();
-        
-        if (!response.ok) throw new Error(data.message);
-        
-        // Store auth token and user
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('currentUser', JSON.stringify(data.user));
-        
-        return { success: true, data };
-    } catch (error) {
-        return { success: false, error: error.message };
+    await new Promise(r => setTimeout(r, 500)); // Simulate delay
+    
+    const users = getAllUsers();
+    
+    if (users.find(u => u.email === email)) {
+        return { success: false, error: 'User already exists' };
     }
+    
+    const newUser = {
+        _id: 'user_' + Date.now(),
+        name,
+        email,
+        password, 
+        role,
+        enrolledCourses: [],
+        wishlist: []
+    };
+    
+    users.push(newUser);
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+    
+    // Auto-login
+    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(newUser));
+    localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, 'mock-token-' + Date.now());
+    
+    return { success: true, data: { user: newUser, token: 'mock-token' } };
 }
 
 async function loginUser(email, password) {
-    try {
-        const response = await fetch(`${API_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-        const data = await response.json();
-        
-        if (!response.ok) throw new Error(data.message);
-        
-        // Store auth token and user
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('currentUser', JSON.stringify(data.user));
-        
-        return { success: true, data };
-    } catch (error) {
-        return { success: false, error: error.message };
+    await new Promise(r => setTimeout(r, 500));
+    
+    const users = getAllUsers();
+    // Simple password check (insecure but fine for mock)
+    const user = users.find(u => u.email === email && u.password === password);
+    
+    if (!user) {
+        return { success: false, error: 'Invalid credentials' };
     }
+    
+    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+    localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, 'mock-token-' + Date.now());
+    
+    return { success: true, data: { user, token: 'mock-token' } };
 }
 
 function logoutUser() {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('currentUser');
+    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
     localStorage.removeItem('selectedCourse');
     localStorage.removeItem('cart');
     localStorage.removeItem('checkoutItems');
+    window.location.reload();
 }
 
 async function fetchUserProfile() {
-    try {
-        const response = await fetch(`${API_URL}/auth/me`, {
-            headers: {
-                'Authorization': `Bearer ${getAuthToken()}`
-            }
-        });
-        
-        if (!response.ok) throw new Error('Failed to fetch profile');
-        
-        const data = await response.json();
-        // Update local storage
-        if (data.user) {
-            localStorage.setItem('currentUser', JSON.stringify(data.user));
-        }
-        return data.user;
-    } catch (error) {
-        console.error('Error fetching profile:', error);
-        return null;
-    }
+    return getCurrentUser();
 }
 
-// ============================================
+// --------------------------------------------
 // COURSE FUNCTIONS
-// ============================================
+// --------------------------------------------
 
-// Global pagination state
-let courses = [];
+// Global pagination state (matches original API structure)
+var courses = []; // Changed to var to ensure global scope attachment if needed
 let currentPage = 1;
 const coursesPerPage = 10;
 
+// Relies on MOCK_COURSES from data/courses_data.js
+// Make sure that file is loaded BEFORE this script in HTML
 async function fetchCourses(category = 'all', page = 1) {
-    try {
-        let url = `${API_URL}/courses?page=${page}&limit=${coursesPerPage}`;
-        if (category && category !== 'all') {
-            url += `&category=${category}`;
-        }
-        
-        console.log(`Fetching courses from: ${url}`);
-        const response = await fetch(url);
-        console.log(`Fetch response status: ${response.status}`);
-        
-        if (!response.ok) throw new Error('Failed to fetch courses');
-        
-        const data = await response.json();
-        
-        // Handle backward compatibility or different response structures
-        if (Array.isArray(data)) {
-            courses = data;
-            return { courses: data, totalPages: 1, currentPage: 1 };
-        }
-        
-        courses = data.courses;
-        console.log(`✓ Fetched ${courses ? courses.length : 0} courses`);
-        return data; // returns { courses, totalPages, currentPage, totalCourses }
-    } catch (error) {
-        console.error('✗ Error fetching courses:', error);
-        return { courses: [], totalPages: 0, currentPage: 1 };
+    if (typeof MOCK_COURSES === 'undefined') {
+        console.error('MOCK_COURSES not found. Ensure courses_data.js is included.');
+        return { courses: [], totalPages: 0 };
     }
+
+    // Filter
+    let filtered = MOCK_COURSES;
+    if (category && category !== 'all') {
+        filtered = MOCK_COURSES.filter(c => c.category === category);
+    }
+    
+    // Pagination
+    const totalCourses = filtered.length;
+    const totalPages = Math.ceil(totalCourses / coursesPerPage);
+    const start = (page - 1) * coursesPerPage;
+    const end = start + coursesPerPage;
+    
+    const paginatedCourses = filtered.slice(start, end);
+    courses = paginatedCourses; // Update global variable used by other functions
+    
+    console.log(`OFFLINE: Fetched ${paginatedCourses.length} courses (Page ${page}/${totalPages})`);
+    
+    return {
+        courses: paginatedCourses,
+        totalPages: totalPages,
+        currentPage: page,
+        totalCourses: totalCourses
+    };
 }
 
 async function getCourseById(courseId) {
-    try {
-        const response = await fetch(`${API_URL}/courses/${courseId}`);
-        if (!response.ok) throw new Error('Course not found');
-        return await response.json();
-    } catch (error) {
-        console.error('Error fetching course:', error);
-        return null;
-    }
+    if (typeof MOCK_COURSES === 'undefined') return null;
+    return MOCK_COURSES.find(c => c._id === courseId);
 }
 
-async function createCourse(courseData) {
-    try {
-        const response = await fetch(`${API_URL}/courses`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}`
-            },
-            body: JSON.stringify(courseData)
-        });
-        const data = await response.json();
-        
-        if (!response.ok) throw new Error(data.message);
-        
-        // Refresh courses list
-        await fetchCourses();
-        return { success: true, data };
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
-}
-
-async function deleteCourse(courseId) {
-    try {
-        const response = await fetch(`${API_URL}/courses/${courseId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${getAuthToken()}`
-            }
-        });
-        const data = await response.json();
-        
-        if (!response.ok) throw new Error(data.message);
-        
-        // Refresh courses list
-        await fetchCourses();
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
-}
-
-// ============================================
-// ORDER & ENROLLMENT FUNCTIONS
-// ============================================
+// --------------------------------------------
+// ORDER FUNCTIONS
+// --------------------------------------------
 
 async function createOrder(orderData) {
-    try {
-        const response = await fetch(`${API_URL}/orders`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}`
-            },
-            body: JSON.stringify(orderData)
-        });
-        const data = await response.json();
+    await new Promise(r => setTimeout(r, 800));
+    
+    const currentUser = getCurrentUser();
+    if (!currentUser) return { success: false, error: 'Not logged in' };
+    
+    // Create new order
+    const orders = JSON.parse(localStorage.getItem(STORAGE_KEYS.ORDERS) || '[]');
+    const newOrder = {
+        _id: 'order_' + Date.now(),
+        user: currentUser._id,
+        items: orderData.items,
+        totalAmount: orderData.totalAmount,
+        status: 'completed',
+        date: new Date().toISOString()
+    };
+    orders.push(newOrder);
+    localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+    
+    // Update USER Enrollments (in the 'users' database)
+    const users = getAllUsers();
+    const userIndex = users.findIndex(u => u._id === currentUser._id);
+    
+    if (userIndex !== -1) {
+        // Enforce array
+        const currentEnrollments = users[userIndex].enrolledCourses || [];
+        // Extract course IDs being purchased
+        const newCourseIds = orderData.items.map(item => item.course);
         
-        if (!response.ok) throw new Error(data.message);
+        // Merge and deduplicate
+        const updatedEnrollments = [...new Set([...currentEnrollments, ...newCourseIds])];
         
-        // Update current user with new enrollments
-        const user = getCurrentUser();
-        if (data.user) {
-            user.enrolledCourses = data.user.enrolledCourses;
-            localStorage.setItem('currentUser', JSON.stringify(user));
-        }
+        // Save to DB
+        users[userIndex].enrolledCourses = updatedEnrollments;
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
         
-        return { success: true, data };
-    } catch (error) {
-        return { success: false, error: error.message };
+        // Save to Session
+        currentUser.enrolledCourses = updatedEnrollments;
+        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+        
+        return { success: true, data: { order: newOrder, user: currentUser } };
     }
+    
+    return { success: false, error: 'User record not found' };
 }
 
 async function getOrders() {
-    try {
-        const response = await fetch(`${API_URL}/orders`, {
-            headers: {
-                'Authorization': `Bearer ${getAuthToken()}`
-            }
-        });
+    const currentUser = getCurrentUser();
+    if (!currentUser) return [];
+    
+    const result = JSON.parse(localStorage.getItem(STORAGE_KEYS.ORDERS) || '[]')
+        .filter(o => o.user === currentUser._id);
         
-        if (!response.ok) throw new Error('Failed to fetch orders');
-        return await response.json();
-    } catch (error) {
-        console.error('Error fetching orders:', error);
-        return [];
-    }
+    return result;
 }
 
-// ============================================
+// --------------------------------------------
 // WISHLIST FUNCTIONS
-// ============================================
+// --------------------------------------------
 
 async function addToWishlist(courseId) {
-    try {
-        const response = await fetch(`${API_URL}/users/wishlist/${courseId}`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${getAuthToken()}`
-            }
-        });
-        const data = await response.json();
-        
-        if (!response.ok) throw new Error(data.message);
-        
-        // Update current user
-        const user = getCurrentUser();
-        user.wishlist = data.wishlist;
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: error.message };
+    const currentUser = getCurrentUser();
+    if (!currentUser) return { success: false, error: 'Not logged in' };
+    
+    const users = getAllUsers();
+    const userIndex = users.findIndex(u => u._id === currentUser._id);
+    
+    if (userIndex !== -1) {
+        const wishlist = users[userIndex].wishlist || [];
+        if (!wishlist.includes(courseId)) {
+            wishlist.push(courseId);
+            users[userIndex].wishlist = wishlist;
+            localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+            
+            currentUser.wishlist = wishlist;
+            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+        }
+        return { success: true, wishlist: currentUser.wishlist };
     }
+    return { success: false };
 }
 
+
 async function removeFromWishlist(courseId) {
-    try {
-        const response = await fetch(`${API_URL}/users/wishlist/${courseId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${getAuthToken()}`
-            }
-        });
-        const data = await response.json();
+    const currentUser = getCurrentUser();
+    if (!currentUser) return { success: false, error: 'Not logged in' };
+    
+    const users = getAllUsers();
+    const userIndex = users.findIndex(u => u._id === currentUser._id);
+    
+    if (userIndex !== -1) {
+        let wishlist = users[userIndex].wishlist || [];
+        wishlist = wishlist.filter(id => id !== courseId);
         
-        if (!response.ok) throw new Error(data.message);
+        users[userIndex].wishlist = wishlist;
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
         
-        // Update current user
-        const user = getCurrentUser();
-        user.wishlist = data.wishlist;
-        localStorage.setItem('currentUser', JSON.stringify(user));
+        currentUser.wishlist = wishlist;
+        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
         
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: error.message };
+        return { success: true, wishlist: currentUser.wishlist };
     }
+    return { success: false };
 }
 
 // ============================================
@@ -305,7 +298,8 @@ async function displayCourses(filter = 'all', page = 1, shouldScroll = false) {
     }
     
     if (!coursesGrid) {
-        console.error('✗ coursesGrid element not found!');
+        // console.error('✗ coursesGrid element not found!'); 
+        // Silent fail on pages without course grid
         return;
     }
     
@@ -321,20 +315,17 @@ async function displayCourses(filter = 'all', page = 1, shouldScroll = false) {
     coursesGrid.innerHTML = '';
 
     if (coursesList.length === 0) {
-        console.warn('⚠️ No courses found');
         coursesGrid.innerHTML = '<p style="text-align: center; color: var(--text-secondary); grid-column: 1/-1;">No courses found</p>';
         updatePagination(0, 0, filter);
         return;
     }
 
-    console.log(`Rendering ${coursesList.length} course cards...`);
     coursesList.forEach(course => {
         const courseCard = createCourseCard(course);
         coursesGrid.appendChild(courseCard);
     });
     
     updatePagination(totalPages, currentPage, filter);
-    console.log(`✓ Successfully displayed ${coursesList.length} courses`);
 }
 
 function updatePagination(totalPages, currentPage, filter) {
@@ -356,11 +347,11 @@ function updatePagination(totalPages, currentPage, filter) {
 
     paginationContainer.innerHTML = `
         <button ${currentPage <= 1 ? 'disabled' : ''} onclick="displayCourses('${filter}', ${currentPage - 1}, true)">
-            &lt; Previous
+             Previous
         </button>
         <span class="page-info">Page ${currentPage} of ${totalPages}</span>
         <button ${currentPage >= totalPages ? 'disabled' : ''} onclick="displayCourses('${filter}', ${currentPage + 1}, true)">
-             Next &gt;
+             Next 
         </button>
     `;
 }
@@ -425,7 +416,10 @@ function getCategoryLabel(category) {
         'web-development': 'Web Development',
         'data-science': 'Data Science',
         'cloud': 'Cloud & DevOps',
-        'ai-ml': 'AI & ML'
+        'ai-ml': 'AI & ML',
+        'music-creative': 'Music & Creative',
+        'mobile': 'Mobile Dev',
+        'security': 'Cybersecurity'
     };
     return labelMap[category] || 'Course';
 }
@@ -524,7 +518,7 @@ function setupEventListeners() {
 
 // Modal Functions
 function openModal(courseId) {
-    const course = courses.find(c => c._id === courseId);
+    const course = MOCK_COURSES.find(c => c._id === courseId);
     if (!course) return;
 
     const modal = document.getElementById('courseModal');
@@ -569,7 +563,7 @@ async function buyNow(courseId) {
         return;
     }
 
-    const course = courses.find(c => c._id === courseId);
+    const course = await getCourseById(courseId);
     if (!course) return;
     
     localStorage.setItem('selectedCourse', JSON.stringify({
@@ -580,20 +574,17 @@ async function buyNow(courseId) {
     window.location.href = 'checkout.html';
 }
 
-// Smooth scrolling for navigation links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const href = this.getAttribute('href');
-        if (href === '#' || href.length <= 1) return;
-        
-        try {
-            const target = document.querySelector(href);
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth' });
-            }
-        } catch (err) {
-            console.warn('Invalid selector:', href);
-        }
-    });
+// Main logic to initialize pages
+document.addEventListener('DOMContentLoaded', () => {
+    setupEventListeners();
+    
+    // Check if on index page or page with course grid
+    if(document.getElementById('coursesGrid')) {
+        displayCourses();
+        displayCategories();
+    }
 });
+
+// Initialize on load
+initializeMockData();
+console.log('✓ OFFLINE API LOADED: Backend is bypassed (Full LocalStorage Implementation).');

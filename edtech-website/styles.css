@@ -60,9 +60,20 @@ body {
 }
 
 .logo {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    height: 60px;
+    width: 280px; /* Reserve space for the absolute logo */
+    position: relative;
+}
+
+.logo img {
+    height: 150px;
+    width: auto;
+    object-fit: contain;
+    position: absolute;
+    top: -45px; /* True vertical center for 150px img in 60px container */
+    left: 0;
 }
 
 .nav-links {
@@ -413,7 +424,7 @@ body {
 .footer-content {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
+    gap: 4rem;
     margin-bottom: 2rem;
 }
 
