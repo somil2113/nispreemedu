@@ -137,7 +137,7 @@ const coursesPerPage = 10;
 
 // Relies on MOCK_COURSES from data/courses_data.js
 // Make sure that file is loaded BEFORE this script in HTML
-async function fetchCourses(category = 'all', page = 1) {
+async function fetchCourses(category = 'all', page = 1, searchQuery = '') {
     if (typeof MOCK_COURSES === 'undefined') {
         console.error('MOCK_COURSES not found. Ensure courses_data.js is included.');
         return { courses: [], totalPages: 0 };
@@ -145,8 +145,19 @@ async function fetchCourses(category = 'all', page = 1) {
 
     // Filter
     let filtered = MOCK_COURSES;
+    
+    // Apply Category Filter
     if (category && category !== 'all') {
-        filtered = MOCK_COURSES.filter(c => c.category === category);
+        filtered = filtered.filter(c => c.category === category);
+    }
+
+    // Apply Search Filter
+    if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        filtered = filtered.filter(c => 
+            c.title.toLowerCase().includes(query) || 
+            c.description.toLowerCase().includes(query)
+        );
     }
     
     // Pagination
@@ -287,7 +298,7 @@ async function removeFromWishlist(courseId) {
 // ============================================
 
 // Display Courses
-async function displayCourses(filter = 'all', page = 1, shouldScroll = false) {
+async function displayCourses(filter = 'all', page = 1, shouldScroll = false, searchQuery = '') {
     const coursesGrid = document.getElementById('coursesGrid');
     
     if (shouldScroll) {
@@ -306,7 +317,7 @@ async function displayCourses(filter = 'all', page = 1, shouldScroll = false) {
     coursesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem;"><div class="spinner"></div><p style="color: var(--text-secondary); margin-top: 1rem;">Loading courses...</p></div>';
     
     // Fetch courses from API
-    const data = await fetchCourses(filter, page);
+    const data = await fetchCourses(filter, page, searchQuery);
     const coursesList = data.courses || [];
     const totalPages = data.totalPages || 1;
     currentPage = data.currentPage || 1;
@@ -316,7 +327,7 @@ async function displayCourses(filter = 'all', page = 1, shouldScroll = false) {
 
     if (coursesList.length === 0) {
         coursesGrid.innerHTML = '<p style="text-align: center; color: var(--text-secondary); grid-column: 1/-1;">No courses found</p>';
-        updatePagination(0, 0, filter);
+        updatePagination(0, 0, filter, searchQuery);
         return;
     }
 
@@ -325,10 +336,10 @@ async function displayCourses(filter = 'all', page = 1, shouldScroll = false) {
         coursesGrid.appendChild(courseCard);
     });
     
-    updatePagination(totalPages, currentPage, filter);
+    updatePagination(totalPages, currentPage, filter, searchQuery);
 }
 
-function updatePagination(totalPages, currentPage, filter) {
+function updatePagination(totalPages, currentPage, filter, searchQuery = '') {
     let paginationContainer = document.getElementById('pagination-container');
     if (!paginationContainer) {
         paginationContainer = document.createElement('div');
@@ -346,11 +357,11 @@ function updatePagination(totalPages, currentPage, filter) {
     }
 
     paginationContainer.innerHTML = `
-        <button ${currentPage <= 1 ? 'disabled' : ''} onclick="displayCourses('${filter}', ${currentPage - 1}, true)">
+        <button ${currentPage <= 1 ? 'disabled' : ''} onclick="displayCourses('${filter}', ${currentPage - 1}, true, '${searchQuery}')">
              Previous
         </button>
         <span class="page-info">Page ${currentPage} of ${totalPages}</span>
-        <button ${currentPage >= totalPages ? 'disabled' : ''} onclick="displayCourses('${filter}', ${currentPage + 1}, true)">
+        <button ${currentPage >= totalPages ? 'disabled' : ''} onclick="displayCourses('${filter}', ${currentPage + 1}, true, '${searchQuery}')">
              Next 
         </button>
     `;
@@ -582,6 +593,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if(document.getElementById('coursesGrid')) {
         displayCourses();
         displayCategories();
+    }
+    
+    // Setup Search Logic
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    
+    if (searchInput) {
+        searchInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                const query = searchInput.value;
+                displayCourses('all', 1, true, query);
+            }
+        });
+    }
+
+    if (searchBtn) {
+        searchBtn.addEventListener('click', () => {
+            if (searchInput) {
+                const query = searchInput.value;
+                displayCourses('all', 1, true, query);
+            }
+        });
     }
 });
 
